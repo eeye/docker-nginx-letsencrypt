@@ -1,0 +1,52 @@
+version: '2'
+services:
+  phpmyadmin:
+    restart: always
+    image: phpmyadmin/phpmyadmin
+    environment:
+      VIRTUAL_HOST: phpmya.example.tld
+      VIRTUAL_PORT: 80
+      # uncomment to not create ssl-cert
+      #LETSENCRYPT_HOST: phpmya.example.tld
+      #LETSENCRYPT_EMAIL: mail@example.tld
+      PMA_HOST: mysql
+    networks:
+      # see the db-a networks comment
+      #- default
+      - nginxletsencrypt
+
+  mysql:
+    restart: always
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: pw
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pw
+    # activate to expose under ?random? port
+    #ports:
+      #- "3306"
+    volumes:
+      - ./shared_db_volume:/var/lib/mysql/
+    networks:
+      # remove networks to run this container in the default network (the network created by this composer file) -> add default to other containers, which must see this container - e.g. phpmyadmin-a
+      #- default
+      - nginxletsencrypt
+
+  php5-apache:
+    image: php:5.6-apache
+    environment:
+      VIRTUAL_HOST: example.tld
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: example.tld
+      LETSENCRYPT_EMAIL: mail@example.tld
+    volumes:
+      - ./html:/var/www/html/
+    restart: always
+    networks:
+      - nginxletsencrypt
+
+networks:
+  proxy-tier:
+    external:
+      name: nginx-proxy
