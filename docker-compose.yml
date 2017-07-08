@@ -45,5 +45,7 @@ services:
 networks:
   proxy-tier:
     external:
-      name: nginx-proxy
+    # first do docker network create nginx-proxy
+      name: nginx-proxy 
+
 
